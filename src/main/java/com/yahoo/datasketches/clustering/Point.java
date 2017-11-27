@@ -12,7 +12,7 @@ public class Point {
 	
 	double[] position;
 	
-	public Point(int weight, double[] position) {
+	public Point(double[] position, double weight) {
 		this.weight = weight;
 		this.position = Arrays.copyOf(position, position.length);
 	}

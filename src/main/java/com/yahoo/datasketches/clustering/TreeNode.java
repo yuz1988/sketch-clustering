@@ -8,11 +8,14 @@ import org.apache.commons.math3.util.Pair;
 
 public class TreeNode {
 	
+	// cluster center
 	Point center;
 	
+	// <member point, weighted-cost to center>
 	List<Pair<Point, Double>> members;
 	
-	double weight;   // cost of members to center
+	// weighted-cost of all members to center
+	double weight;   
 	
 	TreeNode left;
 	
