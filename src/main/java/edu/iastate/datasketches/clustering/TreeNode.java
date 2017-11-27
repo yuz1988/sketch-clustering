@@ -1,5 +1,5 @@
 
-package com.yahoo.datasketches.clustering;
+package edu.iastate.datasketches.clustering;
 
 import java.util.ArrayList;
 import java.util.List;
