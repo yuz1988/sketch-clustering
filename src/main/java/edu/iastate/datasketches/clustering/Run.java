@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 
-import org.apache.commons.math3.util.MathArrays;
-
 public class Run {
 
 	public static void main(String[] args) throws Exception{
@@ -58,7 +56,7 @@ public class Run {
 			double minCost = Double.MAX_VALUE;
 			// find nearest center
 			for (Point c : centers) {
-				double d = MathArrays.distance(p.position, c.position);
+				double d = p.euclidDistTo(c);
 				minCost = Math.min(minCost, d*d*p.weight);
 			}
 			cost += minCost;
