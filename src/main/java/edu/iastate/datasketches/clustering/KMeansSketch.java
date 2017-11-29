@@ -327,7 +327,7 @@ public class KMeansSketch {
 	private void dfs(TreeNode node, final List<Point> resultSet) {
 		// leaf node
 		if (node.left==null && node.right==null) {
-			double weight = 0;
+			double weight = node.center.weight;
 			for (Pair<Point, Double> pair : node.members) {
 				weight += pair.getFirst().weight;
 			}

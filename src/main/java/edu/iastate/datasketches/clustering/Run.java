@@ -34,8 +34,8 @@ public class Run {
 //		List<Point> centers = sketch.coresetTree(points, 1000, new Random());
 //		Long end = System.currentTimeMillis();
 //		double time = (end - start) / 1000.0;
+//
 //		System.out.println("Time cost: " + time + " seconds");
-//		
 //		double costSketch = computeCost(points, centers);
 //		System.out.println("cost: " + costSketch);
 		
