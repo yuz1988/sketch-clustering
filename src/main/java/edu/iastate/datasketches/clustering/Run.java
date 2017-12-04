@@ -25,11 +25,10 @@ public class Run {
 		sc.close();
 		
 		System.out.println("reading input points complete");
-		KMeansSketch sketch = new KMeansSketch();
 		
 		// coreset tree (acceleration)
 //		Long start = System.currentTimeMillis();
-//		List<Point> centers = sketch.coresetTree(points, 1000, new Random());
+//		List<Point> centers = KMeansPlusPlus.fastSeeding(points, 1000, new Random());
 //		Long end = System.currentTimeMillis();
 //		double time = (end - start) / 1000.0;
 //
@@ -40,7 +39,7 @@ public class Run {
 		
 		// kmeans++ seeding (original)
 		Long start = System.currentTimeMillis();
-		List<Point> centers1 = sketch.randomCenters(points, 1000, new Random());
+		List<Point> centers1 = KMeansPlusPlus.seeding(points, 1000, new Random());
 		Long end = System.currentTimeMillis();
 		double time = (end - start) / 1000.0;
 		System.out.println("Time cost: " + time + " seconds");
