@@ -4,13 +4,14 @@ package edu.iastate.datasketches.clustering;
 import java.util.Arrays;
 
 import org.apache.commons.math3.exception.DimensionMismatchException;
+import org.apache.commons.math3.ml.clustering.Clusterable;
 import org.apache.commons.math3.util.MathArrays;
 
-public class Point {
+public class Point implements Clusterable {
 	
-	double weight;
+	public double weight;
 	
-	double[] position;
+	public double[] position;
 	
 	public Point(double[] position, double weight) {
 		this.weight = weight;
@@ -24,5 +25,10 @@ public class Point {
 
 	public double euclidDistTo(Point q) throws DimensionMismatchException {
 		return MathArrays.distance(position, q.position);
+	}
+
+	@Override
+	public double[] getPoint() {
+		return position;
 	}
 }

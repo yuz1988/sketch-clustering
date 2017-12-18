@@ -6,10 +6,33 @@ import java.util.List;
 import java.util.Random;
 
 import org.apache.commons.math3.exception.NumberIsTooSmallException;
+import org.apache.commons.math3.ml.clustering.CentroidCluster;
+import org.apache.commons.math3.ml.clustering.KMeansPlusPlusClusterer;
+import org.apache.commons.math3.ml.clustering.MultiKMeansPlusPlusClusterer;
 import org.apache.commons.math3.util.Pair;
 
 public class KMeansPlusPlus {
 
+	/**
+	 * TODO: revise to make clean
+	 * @param points
+	 * @param k
+	 * @param maxIterations
+	 * @param numTrials
+	 * @return
+	 */
+	public static List<Point> multiKMeansPlusPlus(List<Point> points, int k, int maxIterations, int numTrials) {
+		KMeansPlusPlusClusterer<Point> clusterer = new KMeansPlusPlusClusterer<Point>(k, maxIterations);
+		MultiKMeansPlusPlusClusterer<Point> multiClusterer = new MultiKMeansPlusPlusClusterer<Point>(clusterer,
+				numTrials);
+		List<CentroidCluster<Point>> centers = multiClusterer.cluster(points);
+		List<Point> res = new ArrayList<>();
+		for (CentroidCluster<Point> c : centers) {
+			res.add((Point) c.getCenter());
+		}
+		return res;
+	}
+	
 	/**
 	 * uniformly select points (un-weighted)
 	 * @param pointList
@@ -205,6 +228,16 @@ public class KMeansPlusPlus {
 			// TODO add sanity check on node's weight is not 0
 			TreeNode node = root;
 			while (node.left != null && node.right != null) {
+				// TODO:
+				if (node.left.members.size() <= 1) {
+					node = node.right;
+					continue;
+				}
+				else if (node.right.members.size() <= 1) {
+					node = node.left;
+					continue;
+				}
+				
 				double leftNodeWeight = node.left.weight;
 				double rightNodeWeight = node.right.weight;
 				// sample by weights of two child nodes
@@ -220,6 +253,10 @@ public class KMeansPlusPlus {
 			// the D^2 sampling to the center of P_l
 			Point leafCenter = node.center;
 			List<Pair<Point, Double>> leafPoints = node.members;
+			if (leafPoints.size() == 0) {
+				System.out.println("leafPoints is empty");
+			}
+			
 			
 			// compute weighted-squared-distance to the center,
 			// which is equal to the cost to the center and we

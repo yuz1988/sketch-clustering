@@ -6,12 +6,19 @@ import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 
+import edu.iastate.liberty.PracticalOnline;
+
 public class Run {
 
 	public static void main(String[] args) throws Exception{
-		Scanner sc = new Scanner(new File("covtype.data"));
-		List<Point> points = new ArrayList<>();
+		String filePath = "E:/dataset/uscensus.txt";
+		Scanner sc = new Scanner(new File(filePath));
 		
+		int k = 17;
+		// PracticalOnline po = new PracticalOnline(k);
+		// KMeansSketch ks = new KMeansSketch(k, 50*k, 2, 20, 15);
+		
+		List<Point> points = new ArrayList<>();
 		while(sc.hasNextLine()) {
 			String line = sc.nextLine();
 			String[] strs = line.split(",");
@@ -20,11 +27,21 @@ public class Run {
 				pos[i] = Double.parseDouble(strs[i]);
 			}
 			Point p = new Point(pos, 1);
-			points.add(p);
+			points.add(new Point(p));
+			
+			// stream clustering
+			// po.cluster(p);
+			// ks.cluster(p);
 		}
 		sc.close();
+		System.out.println("clustering input points complete");
+		// List<Point> centers = po.getCenters();
+		List<Point> centers = KMeansPlusPlus.seeding(points, k, new Random());
+		// List<Point> centers = ks.getCenters();
+		double cost = computeCost(points, centers);
+		System.out.println("cost: " + cost + " num: " + centers.size());
 		
-		System.out.println("reading input points complete");
+		
 		
 		// coreset tree (acceleration)
 //		Long start = System.currentTimeMillis();
@@ -38,14 +55,14 @@ public class Run {
 		
 		
 		// kmeans++ seeding (original)
-		Long start = System.currentTimeMillis();
-		List<Point> centers1 = KMeansPlusPlus.seeding(points, 1000, new Random());
-		Long end = System.currentTimeMillis();
-		double time = (end - start) / 1000.0;
-		System.out.println("Time cost: " + time + " seconds");
-		
-		double costSeeding = computeCost(points, centers1);
-		System.out.println("cost: " + costSeeding);
+//		Long start = System.currentTimeMillis();
+//		List<Point> centers1 = KMeansPlusPlus.seeding(points, 1000, new Random());
+//		Long end = System.currentTimeMillis();
+//		double time = (end - start) / 1000.0;
+//		System.out.println("Time cost: " + time + " seconds");
+//		
+//		double costSeeding = computeCost(points, centers1);
+//		System.out.println("cost: " + costSeeding);
 		
 	}
 	
