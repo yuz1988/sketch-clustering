@@ -1,6 +1,7 @@
 
 package edu.iastate.datasketches.clustering;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -22,15 +23,17 @@ public class KMeansPlusPlus {
 	 * @return
 	 */
 	public static List<Point> multiKMeansPlusPlus(List<Point> points, int k, int maxIterations, int numTrials) {
-		KMeansPlusPlusClusterer<Point> clusterer = new KMeansPlusPlusClusterer<Point>(k, maxIterations);
-		MultiKMeansPlusPlusClusterer<Point> multiClusterer = new MultiKMeansPlusPlusClusterer<Point>(clusterer,
-				numTrials);
-		List<CentroidCluster<Point>> centers = multiClusterer.cluster(points);
-		List<Point> res = new ArrayList<>();
-		for (CentroidCluster<Point> c : centers) {
-			res.add((Point) c.getCenter());
-		}
-		return res;
+//		KMeansPlusPlusClusterer<Point> clusterer = new KMeansPlusPlusClusterer<Point>(k, maxIterations);
+//		MultiKMeansPlusPlusClusterer<Point> multiClusterer = new MultiKMeansPlusPlusClusterer<Point>(clusterer,
+//				numTrials);
+//		List<CentroidCluster<Point>> centers = multiClusterer.cluster(points);
+//		List<Point> res = new ArrayList<>();
+//		for (CentroidCluster<Point> c : centers) {
+//			res.add(new Point(c.getCenter().getPoint(), 1));
+//		}
+//		return res;
+		
+		return KMeansPlusPlus.fastSeeding(points, k);
 	}
 	
 	/**
@@ -40,13 +43,14 @@ public class KMeansPlusPlus {
 	 * @param random
 	 * @return
 	 */
-	public static List<Point> randomCenters(final List<Point> pointList, int m, Random random) {
+	public static List<Point> randomCenters(final List<Point> pointList, int m) {
 		int numOfPoints = pointList.size();
 		int[] pointIndex = new int[numOfPoints];
 		for (int i=0; i<numOfPoints; i++) {
 			pointIndex[i] = i;
 		}
 		
+		Random random = new Random();
 		List<Integer> centerIndex = new ArrayList<>();
 		for (int i=0; i<m; i++) {
 			int index = random.nextInt(numOfPoints-i);
@@ -69,7 +73,7 @@ public class KMeansPlusPlus {
      * @param points the points to choose the initial centers from
      * @return the initial centers (not weighted)
      */
-    public static List<Point> seeding(final List<Point> pointList, int m, Random random) {
+    public static List<Point> seeding(final List<Point> pointList, int m) {
 
         // The number of points in the list.
         final int numPoints = pointList.size();
@@ -79,6 +83,9 @@ public class KMeansPlusPlus {
         // The resulting list of initial centers.
         final List<Point> resultSet = new ArrayList<>();
 
+        // random generator
+        Random random = new Random();
+        
         // choose first center uniformly at random from points
 		double sumOfWeights = 0;
 		double[] pointWeights = new double[pointList.size()];
@@ -182,13 +189,16 @@ public class KMeansPlusPlus {
 	 * (StreamKM++: A Clustering Algorithm for Data Streams, by Ackermann et al)
 	 * @param points
 	 * @param m
-	 * @param randSeed
 	 * @return
+	 * @throws IOException 
 	 */
-	public static List<Point> fastSeeding(final List<Point> points, int m, Random randSeed) {
+	public static List<Point> fastSeeding(final List<Point> points, int m) {
 		if (points.size() < m) {
 			throw new NumberIsTooSmallException(points.size(), m, false);
 		}
+
+		// random generator for sampling
+		Random randSeed = new Random();
 		
 		// choose first center uniformly at random from points
         // Note: as each input point is weighted, we sample by each point's weight,
@@ -199,10 +209,10 @@ public class KMeansPlusPlus {
     		pointWeights[i] = points.get(i).weight;
     		sumOfWeights += pointWeights[i];
     	}
-		int firstCenterIndex = sampleByWeight(pointWeights, randSeed.nextDouble() * sumOfWeights);
+		int firstCenterIndex = sampleByWeight(pointWeights, sumOfWeights * randSeed.nextDouble());
 		Point firstCenter = points.get(firstCenterIndex);
 		
-		// create root node
+		// create first center and root node
 		TreeNode root = new TreeNode(firstCenter); 
 		double sumOfCost = 0;
 		for (int i=0; i<points.size(); i++) {
@@ -220,20 +230,22 @@ public class KMeansPlusPlus {
 			root.members.add(pair);
 		}
 		root.weight = sumOfCost;
-		
+		root.numMembers = points.size() - 1;
+
 		// generate 2 to m centers
 		int numOfCenters = 1;
 		while (numOfCenters < m) {
 			// find leaf node
-			// TODO add sanity check on node's weight is not 0
 			TreeNode node = root;
 			while (node.left != null && node.right != null) {
-				// TODO:
-				if (node.left.members.size() <= 1) {
+				// first check if left child or right child has a 
+				// "free" member point (not assigned as center),
+				// if not, we should choose the other child anyway
+				if (node.left.numMembers == 0) {
 					node = node.right;
 					continue;
 				}
-				else if (node.right.members.size() <= 1) {
+				if (node.right.numMembers == 0) {
 					node = node.left;
 					continue;
 				}
@@ -253,10 +265,6 @@ public class KMeansPlusPlus {
 			// the D^2 sampling to the center of P_l
 			Point leafCenter = node.center;
 			List<Pair<Point, Double>> leafPoints = node.members;
-			if (leafPoints.size() == 0) {
-				System.out.println("leafPoints is empty");
-			}
-			
 			
 			// compute weighted-squared-distance to the center,
 			// which is equal to the cost to the center and we
@@ -268,8 +276,7 @@ public class KMeansPlusPlus {
             }
             
             // sample next center
-            int nextCenterIndex = sampleByWeight(squaredDist, randSeed.nextDouble() * distSqSum);
-            // deep copy
+            int nextCenterIndex = sampleByWeight(squaredDist, distSqSum * randSeed.nextDouble());
 			Point nextCenter = leafPoints.get(nextCenterIndex).getFirst();
 			
 			// generate left child TreeNode with previous leaf center (see Fig 2. in the paper)
@@ -302,8 +309,12 @@ public class KMeansPlusPlus {
 					rightChildWeight += cost2Center;
 				}
 			}
+			// assign weight and numMembers of two child nodes
 			leftChildNode.weight = leftChildWeight;
+			leftChildNode.numMembers = leftChildNode.members.size();
+			
 			rightChildNode.weight = rightChildWeight;
+			rightChildNode.numMembers = rightChildNode.members.size();
 			
 			// link tree nodes
 			node.left = leftChildNode;
@@ -311,11 +322,12 @@ public class KMeansPlusPlus {
 			leftChildNode.parent = node;
 			rightChildNode.parent = node;
 			
-			// propagate update of weight attribute upwards to node root
+			// propagate update of weight and numMembers attribute upwards to node root
 			while (node != null) {
 				// weight attribute of an inner node is defined as 
 				// the sum of the weights of its child nodes
 				node.weight = node.left.weight + node.right.weight;
+				node.numMembers--;
 				node = node.parent;
 			}
 			
@@ -371,4 +383,5 @@ public class KMeansPlusPlus {
 		dfs(node.left, resultSet);
 		dfs(node.right, resultSet);
 	}
+	
 }

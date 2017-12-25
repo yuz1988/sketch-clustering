@@ -3,21 +3,16 @@ package edu.iastate.datasketches.clustering;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import java.util.Scanner;
 
-import edu.iastate.liberty.PracticalOnline;
+import edu.iastate.liberty.FullyOnline;
 
 public class Run {
 
 	public static void main(String[] args) throws Exception{
-		String filePath = "E:/dataset/uscensus.txt";
+		// read points
+		String filePath = "E:/dataset/clean/shuttle.txt";
 		Scanner sc = new Scanner(new File(filePath));
-		
-		int k = 17;
-		// PracticalOnline po = new PracticalOnline(k);
-		// KMeansSketch ks = new KMeansSketch(k, 50*k, 2, 20, 15);
-		
 		List<Point> points = new ArrayList<>();
 		while(sc.hasNextLine()) {
 			String line = sc.nextLine();
@@ -28,20 +23,28 @@ public class Run {
 			}
 			Point p = new Point(pos, 1);
 			points.add(new Point(p));
-			
-			// stream clustering
-			// po.cluster(p);
-			// ks.cluster(p);
 		}
 		sc.close();
-		System.out.println("clustering input points complete");
-		// List<Point> centers = po.getCenters();
-		List<Point> centers = KMeansPlusPlus.seeding(points, k, new Random());
-		// List<Point> centers = ks.getCenters();
-		double cost = computeCost(points, centers);
-		System.out.println("cost: " + cost + " num: " + centers.size());
 		
-		
+		// int[] numCenters = new int[]{20, 40, 60, 80, 100};
+		int[] numCenters = new int[]{17, 33, 54, 67, 92};
+		for (int k : numCenters) {
+			// create model
+			// PracticalOnline po = new PracticalOnline(k);
+			// KMeansSketch ks = new KMeansSketch(k, 50*k, 2, 15, 15);
+			// stream clustering
+//			for (Point p : points) {
+//				// po.cluster(p);
+//				ks.cluster(p);
+//			}
+			
+			System.out.println("clustering input points complete");
+			// List<Point> centers = po.getCenters();
+			List<Point> centers = KMeansPlusPlus.fastSeeding(points, k);
+		    // List<Point> centers = ks.getCenters();
+			double cost = computeCost(points, centers);
+			System.out.println("k: " + k + " cost: " + cost + " num: " + centers.size());
+		}
 		
 		// coreset tree (acceleration)
 //		Long start = System.currentTimeMillis();

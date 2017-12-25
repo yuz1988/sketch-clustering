@@ -14,6 +14,9 @@ public class TreeNode {
 	// <member point, weighted-cost to center>
 	List<Pair<Point, Double>> members;
 	
+	// number of member points
+	int numMembers;
+	
 	// weighted-cost of all members to center
 	double weight;   
 	
@@ -22,11 +25,6 @@ public class TreeNode {
 	TreeNode right;
 	
 	TreeNode parent;
-	
-	// TODO
-	public TreeNode(Point center, List<Point> members, double weight) {
-		
-	}
 	
 	public TreeNode(Point center) {
 		this.center = new Point(center);

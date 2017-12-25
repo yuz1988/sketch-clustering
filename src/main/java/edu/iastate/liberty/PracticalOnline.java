@@ -32,29 +32,36 @@ public class PracticalOnline {
 		f_r = 0;
 		
 		// based on the paper, k is set "heurisitc (entirely ad-hoc)"
-		this.k = (k_target-15.0) / 5.0;
+		k = Math.max((k_target - 15.0) / 5.0, 0);
 		centers = new ArrayList<Point>();
 		randSeed = new Random();
 	}
 	
 	/** 
 	 * upon receiving each point from the stream,
-	 * note that the first (k+1) points we receive them anyway,
+	 * note that the first (k+10) points we receive them anyway,
 	 * and use them to initiate w and f_r
 	 * @param p
 	 */
 	public void cluster(Point p) {
-		n++;
-		
 		if (n <= k + 10) {
+			// check whether same as previous centers (duplicates)
+			if (checkDuplicate(centers, p)) {
+				return;
+			}
+			
+			// not duplicate, add to the centers
 			centers.add(p);
+			n++;
+			
 			// initialize w and f_r
-			if (n == k + 10) {
+			if (n > k + 10) {
 				// find 10 smallest squared distances of points 
 				// in C (centers) to their closest neighbor
 				PriorityQueue<Double> pq = new PriorityQueue<>();
 				for (int i=0; i<centers.size(); i++) {
 					Point c = centers.get(i);
+					
 					double minDist = Double.MAX_VALUE;
 					// for each point, compute distance to its
 					// closest neighbor
@@ -94,6 +101,21 @@ public class PracticalOnline {
 				f_r *= 10;
 			}
 		}
+	}
+	
+	/**
+	 * check if p duplicates with points in center
+	 * @param center
+	 * @param p
+	 * @return
+	 */
+	private boolean checkDuplicate(List<Point> centers, Point p) {
+		for (Point c : centers) {
+			if (c.euclidDistTo(p) < 1e-8) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public List<Point> getCenters() {

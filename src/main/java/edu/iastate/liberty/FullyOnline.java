@@ -42,12 +42,18 @@ public class FullyOnline {
 	 * @param p
 	 */
 	public void cluster(Point p) {
-		n++;
-		
 		if (n <= k + 1) {
+			// check whether same as previous centers (duplicates)
+			if (checkDuplicate(centers, p)) {
+				return;
+			}
+			
+			// not duplicate, add to the centers
 			centers.add(p);
+			n++;
+			
 			// initialize w and f_r
-			if (n == k + 1) {
+			if (n > k + 1) {
 				// find min distance between every two centers
 				double minDist = Double.MAX_VALUE;
 				for (int i=0; i<centers.size(); i++) {
@@ -81,6 +87,21 @@ public class FullyOnline {
 		}
 	}
 
+	/**
+	 * check if p duplicates with points in center
+	 * @param center
+	 * @param p
+	 * @return
+	 */
+	private boolean checkDuplicate(List<Point> centers, Point p) {
+		for (Point c : centers) {
+			if (c.euclidDistTo(p) < 1e-8) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	public List<Point> getCenters() {
 		return centers;
 	}

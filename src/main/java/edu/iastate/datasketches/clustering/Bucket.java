@@ -2,7 +2,6 @@ package edu.iastate.datasketches.clustering;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 import org.apache.commons.math3.util.Pair;
 
@@ -58,7 +57,6 @@ public class Bucket {
 	
 	/**
 	 * Merge the coreset in this bucket (size m) with other buckets (coresets)
-	 * 
 	 * @return a new bucket with merged coreset (size m)
 	 */
 	public Bucket mergeBuckets(List<Bucket> bucketList) {
@@ -68,7 +66,7 @@ public class Bucket {
 		for (Bucket b : bucketList) {
 			unionSet.addAll(b.coreset);
 		}
-		List<Point> mergedCoreset = KMeansPlusPlus.fastSeeding(unionSet, m, new Random());
+		List<Point> mergedCoreset = KMeansPlusPlus.fastSeeding(unionSet, m);
 		Bucket mergedBucket = new Bucket(m, mergedCoreset);
 		return mergedBucket;
 	}
